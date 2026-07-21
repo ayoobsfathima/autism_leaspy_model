@@ -1,0 +1,9 @@
+{
+  "reconstruction_mae_argmax": 0.1077,
+  "reconstruction_mae_expectation": 0.1431,
+  "reconstruction_mae_naive_baseline": 1.5045,
+  "correlation_tau_recovered_vs_true": 0.7891,
+  "correlation_xi_recovered_vs_true": 0.636,
+  "cluster_cv_accuracy_from_recovered_random_effects": 0.98,
+  "cluster_cv_accuracy_from_true_random_effects_upper_bound": 1.0
+}
