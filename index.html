@@ -430,6 +430,7 @@ function renderMain(){
       <span><span class="swatch" style="background:var(--accent);"></span>this child (personalized)</span>
       <span><span class="swatch" style="background:var(--ink); border-radius:50%; width:7px; height:7px;"></span>recorded visit</span>
     </div>
+    ${!c.visits.length ? '<div style="font-size:12px; color:var(--ink-muted); margin:-6px 0 10px;">No visits yet — this child\'s curve defaults exactly to the population average, so the two lines coincide (you\'ll still see the dashed pattern on top).</div>' : ''}
     <div class="charts-grid" id="chartsGrid"></div>
   `;
 
@@ -486,9 +487,13 @@ function renderCharts(c, fit){
       data:{
         labels: ages,
         datasets:[
-          {type:'line', label:'population', data:popCurve, borderColor:'#b7c0cc', borderWidth:1.5, borderDash:[4,3], pointRadius:0, tension:0.15},
-          {type:'line', label:'personalized', data:persCurve, borderColor:'#2c6e7f', borderWidth:2, pointRadius:0, tension:0.15},
-          {type:'scatter', label:'visits', data:points, backgroundColor:'#1b2430', pointRadius:4},
+          // personalized drawn first (behind); population drawn last (on top, dashed) so
+          // when the two coincide (e.g. a child with no visits yet defaults exactly to the
+          // population average) the dashed line is still visible on top, with the solid
+          // line peeking through its gaps, instead of one line hiding the other.
+          {type:'line', label:'personalized', data:persCurve, borderColor:'#2c6e7f', borderWidth:2.5, pointRadius:0, tension:0.15, order:2},
+          {type:'line', label:'population', data:popCurve, borderColor:'#b7c0cc', borderWidth:2, borderDash:[5,4], pointRadius:0, tension:0.15, order:1},
+          {type:'scatter', label:'visits', data:points, backgroundColor:'#1b2430', pointRadius:4, order:0},
         ]
       },
       options:{
