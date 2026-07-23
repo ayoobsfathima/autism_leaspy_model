@@ -1,80 +1,87 @@
-# Autism Ordinal Disease Course Mapping — Synthetic Data Simulator
+# CARS2-ST Ordinal Disease Course Mapping — Final Build (n=300)
 
-Generates synthetic longitudinal ordinal marker data for autism progression,
-using the same generative model as the ordinal Disease Course Mapping (DCM)
-approach in Poulet & Durrleman (2023), *Statistics in Medicine* — the paper
-behind the Leaspy library you're planning to use for the Roots app.
+Complete rebuild around CARS2-ST at n=300, the sample size that unlocks
+reliable item-level factor recovery (see the sample-size sweep from the
+earlier n=100 build: ARI goes from -0.13 at n=100 to +0.40 at n=300).
 
-## What it simulates
+## Why CARS2-ST, why n=300
+- **Satisfies "clinician only"**: CARS2-ST is genuine clinician direct
+  behavioral observation, not an informant checklist a clinician happens to
+  fill out (unlike GARS-3/ABC).
+- **Ground truth from a real, published factor analysis**: Campbell et al.
+  (2026, *Research in Autism*) — Social Communication (8 items),
+  Restrictive/Repetitive Behavior/Sensory (3 items), Emotional/Behavioral
+  Dysregulation (4 items), with published factor correlations SC-RB=.87,
+  RB-ED=.49, SC-ED=.23.
+- **n=300 is where the model actually recovers this structure** — confirmed
+  empirically, not assumed (see `output/cars2_sample_size_sweep.csv` from
+  the earlier diagnostic run for the full n=100/200/300/500 comparison).
 
-- **7 items**, each on a 0–4 ordinal (Likert-style) scale, standing in for
-  the instruments in your protocol:
-  - `communication_cder`, `social_cder` — CDER
-  - `adaptive_vabs` — VABS-II composite, bucketed to 5 levels
-  - `hyperactivity_abc`, `irritability_abc` — ABC
-  - `insistence_sameness` — ADI-R "Insistence on Sameness"
-  - `rsm_repetitive` — repetitive sensorimotor behaviour (near-flat slope,
-    reflecting the "generally stable" pattern noted in your protocol)
-- **100 synthetic children**, ages 3–10 (within your 70–116 sample-size
-  range), 2–6 irregular visits each.
-- **Two latent subtypes**, baked in via one ICA source, so you have a known
-  ground truth to check whether a fitted model (Leaspy or otherwise)
-  recovers the right cluster structure — same validation trick as the
-  paper's Section 3.1 experiment.
-- Individual random effects: time-shift (`tau`, early/late developmental
-  pace), log-acceleration (`xi`, fast/slow progressor), and item-level
-  space-shifts (via a small ICA mixing matrix).
+## Pipeline (in order)
+1. `cars2_simulator.py` — generates synthetic data. Ground truth sources are
+   drawn CORRELATED (matching the published .87/.49/.23), not independent.
+2. `fit_cars2_dcm.py` — the working fitter (joint MAP via torch/Adam,
+   documented stand-in for real leaspy; see below).
+3. `fit_with_real_leaspy.py` — reference script for real `leaspy` (needs
+   Python 3.9-3.10, see the script's docstring for exact setup).
+4. Validation (reconstruction + random-effect recovery + factor-structure
+   recovery against Campbell et al.'s published grouping).
+5. `cars2_dcm_demo/index.html` — standalone deployable demo app.
+
+## Results at n=300
+
+```
+reconstruction_mae_expectation:                          1.40   (vs 2.51 midpoint baseline, 0-6 internal scale)
+correlation_tau_recovered_vs_true:                        0.57
+correlation_xi_recovered_vs_true:                         0.64
+profile_cv_accuracy_from_recovered_random_effects:        0.63   (vs 0.90 upper bound using true effects)
+factor_recovery_adjusted_rand_index_vs_published:         0.40   (vs -0.13 at n=100)
+```
+
+Meaningfully better than n=100 across the board, especially the factor
+recovery (the thing that was actually broken before). Still imperfect —
+SC and RB remain hard to fully separate because they're genuinely
+near-collinear in the real instrument (published r=.87), not an artifact of
+our modeling. The demo's Population Structure tab shows this directly: SC
+and RB items blend somewhat in the correlation heatmap, while ED stands out
+more distinctly, matching the published correlation pattern.
 
 ## Files
 
-- `ordinal_dcm_simulator.py` — the model + generation code
-- `output/simulated_long.csv` — one row per (subject, visit, item); this is
-  the format Leaspy expects (long format)
-- `output/simulated_wide.csv` — one row per (subject, visit), items as columns
-- `output/simulated_subjects_ground_truth.csv` — true random effects & cluster
-  label per subject, for validating a fitted model against ground truth
-- `output/item_metadata.json` — item definitions (direction, fixed effects)
-- `output/population_curves.png` — sanity-check plot of the population-average
-  probability of each ordinal level, by age, for every item
+**Simulator & data**
+- `cars2_simulator.py`
+- `output/cars2_simulated_long_n300.csv` — long-format data (Leaspy-compatible)
+- `output/cars2_subjects_ground_truth_n300.csv` — true random effects, for validation
+- `output/cars2_item_table.json` — item metadata (factor, published loading, fixed effects)
 
-## Run it
+**Fitting**
+- `fit_cars2_dcm.py` — working stand-in fitter
+- `fit_with_real_leaspy.py` — real-leaspy reference (Python 3.9-3.10 required)
+- `output/cars2_n300_fitted_fixed_effects.csv`
+- `output/cars2_n300_fitted_individual_params.csv`
+- `output/cars2_n300_fitted_model_state.pt` — raw torch weights
+- `output/cars2_n300_fitted_model_export.json` — portable JSON (fixed effects + mixing matrix), used by the demo app
 
-```bash
-python3 ordinal_dcm_simulator.py
-```
+**Validation**
+- `output/cars2_n300_validation_report.json`
+- `output/cars2_n300_validation_plots.png`
+- `output/cars2_n300_merged_validation.csv`
 
-Deterministic given `seed=42`; change the seed or `n_subjects` in
-`simulate_cohort()` to generate different cohorts.
+**Demo app**
+- `cars2_dcm_demo/index.html` — standalone, no build step, no backend.
+  Two tabs: Trajectory Explorer (personalize + predict a child's course) and
+  Population Structure (item-clustering heatmap, the Figure-5 analog).
 
-## Design choices worth revisiting with your clinical team
-
-1. **Item set is a placeholder.** I picked one representative composite per
-   instrument family from your protocol rather than every individual item
-   (e.g. all CDER sub-items), because with n≈70–116 real patients, item-level
-   modelling of 50+ items (like the paper's 59 MDS-UPDRS items on 900
-   patients) would almost certainly be under-powered. Worth deciding now
-   whether Leaspy will run on subscales or true items once real data exists.
-2. **Direction handling.** The ordinal cumulative-logit model (paper eq. 3)
-   assumes P(Y≥l) is non-increasing in l, which must hold regardless of
-   whether the *item itself* trends up or down with age. I fixed this by
-   applying the trend direction (`sign`) only to the age-varying part of the
-   warped time, while the level-delay offsets always act in the same
-   direction — this is a deviation/clarification from the literal paper
-   formula (which only handles increasing items, since Parkinson's markers
-   only worsen) and matters for your "improving" items like hyperactivity.
-3. **No comorbidity/covariate layer yet.** Your protocol's open questions
-   (IQ, puberty onset, sex, seizures, SES, etc.) aren't in this simulator.
-   Once the core ordinal DCM is running, those become either (a) covariates
-   on the fixed effects, or (b) stratification variables for separate
-   population curves — decide based on how large your eventual real sample is.
-4. **t0 = 3 years** is used as the shared reference age across items. In the
-   original paper t0 is itself a fitted population parameter; here it's
-   fixed for simplicity since we're generating (not estimating) data.
-
-## Next step
-
-Fit an ordinal DCM (Leaspy) to `simulated_long.csv`, recover the fixed
-effects and individual random effects, and check them against
-`simulated_subjects_ground_truth.csv` (in particular: does the 2-cluster
-structure separate out via t-SNE on random effects, same as paper Fig. 3?).
-That validates the pipeline before you point it at real patient data.
+## Known limitations (carried forward honestly, not hidden)
+1. Fixed-effect values (`p_hat`, `v_hat`, `delta_hat`) are not uniquely
+   identifiable in this model family — trust reconstruction accuracy and
+   structure recovery, not raw parameter values.
+2. SC/RB separation remains partial even at n=300, because the published
+   instrument itself has these factors at r=.87. This is a property of
+   CARS2-ST, not a fitting failure.
+3. The stand-in estimator (joint MAP) understates posterior uncertainty
+   compared to leaspy's full MCMC-SAEM. Point estimates should be fine for
+   demonstration purposes; don't treat confidence intervals as available.
+4. Simulated data only — no real patient data has been used anywhere in
+   this pipeline. Before any real use, refit on real CARS2-ST data and
+   re-export the model for the demo app.

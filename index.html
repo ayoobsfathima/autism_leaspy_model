@@ -3,512 +3,344 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roots — developmental progress tracker</title>
+<title>Disease Course Mapping for Autism — CARS2-ST Demo</title>
 <style>
   :root{
     --ink:#1b2430; --ink-soft:#4d5a6b; --ink-muted:#8a94a3;
     --bg:#f5f6f8; --surface:#ffffff; --border:#dfe3e9;
     --accent:#2c6e7f; --accent-soft:#e4f0f2;
-    --skill:#1d7a5f; --skill-soft:#e3f3ee;
-    --behavior:#b5651d; --behavior-soft:#f8ecdd;
-    --danger:#a3342c;
     --radius:10px;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    font-size:14px; line-height:1.5;
-  }
-  header.top{
-    background:var(--ink); color:#fff; padding:14px 24px;
-    display:flex; align-items:baseline; gap:12px;
-  }
-  header.top h1{font-size:17px; font-weight:600; margin:0;}
-  header.top .tag{font-size:12px; color:#c7cfd8;}
-  .disclaimer{
-    background:#fff4e5; border-bottom:1px solid #f0d9ad; color:#7a5316;
-    font-size:12.5px; padding:8px 24px;
-  }
-  .layout{display:grid; grid-template-columns:230px 1fr; min-height:calc(100vh - 84px);}
-  aside{
-    background:var(--surface); border-right:1px solid var(--border);
-    padding:16px; display:flex; flex-direction:column; gap:10px;
-  }
-  aside h2{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); margin:4px 0;}
-  .child-item{
-    padding:9px 10px; border-radius:8px; cursor:pointer; border:1px solid transparent;
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .child-item:hover{background:var(--bg);}
-  .child-item.active{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
-  .child-item .n{font-size:11px; color:var(--ink-muted);}
-  button{
-    font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--border);
-    background:var(--surface); padding:8px 12px; color:var(--ink);
-  }
-  button:hover{border-color:var(--ink-soft);}
-  button.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
-  button.primary:hover{background:#0e141c;}
-  button.ghost{border-color:transparent; padding:4px 6px; color:var(--ink-muted);}
-  main{padding:22px 28px; max-width:1180px;}
-  .empty{color:var(--ink-muted); padding:60px 0; text-align:center;}
-  .child-header{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px;}
-  .child-header h2{margin:0 0 4px 0; font-size:20px;}
-  .child-header .sub{color:var(--ink-muted); font-size:13px;}
-  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:18px;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55;}
+  header.top{background:var(--ink); color:#fff; padding:18px 28px;}
+  header.top h1{font-size:18px; font-weight:600; margin:0 0 4px 0;}
+  header.top p{margin:0; font-size:13px; color:#c7cfd8; max-width:780px;}
+  .disclaimer{background:#fff4e5; border-bottom:1px solid #f0d9ad; color:#7a5316; font-size:12.5px; padding:8px 28px;}
+  .tabs{display:flex; gap:8px; padding:14px 28px 0; background:var(--surface); border-bottom:1px solid var(--border);}
+  .tab-btn{padding:10px 16px; border:none; background:none; font:inherit; font-size:13.5px; font-weight:500; color:var(--ink-muted); cursor:pointer; border-bottom:2px solid transparent;}
+  .tab-btn.active{color:var(--accent); border-bottom-color:var(--accent);}
+  main{padding:24px 28px; max-width:1180px; margin:0 auto;}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:18px;}
   .panel h3{margin:0 0 12px 0; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft);}
-  .visit-form{display:grid; grid-template-columns:90px repeat(7,1fr) auto; gap:8px; align-items:end;}
-  .visit-form label{font-size:11px; color:var(--ink-muted); display:block; margin-bottom:3px;}
-  .visit-form input, .visit-form select{
-    width:100%; padding:7px 6px; border:1px solid var(--border); border-radius:6px; font:inherit;
-  }
-  table{width:100%; border-collapse:collapse; font-size:12.5px;}
-  th, td{padding:6px 8px; text-align:center; border-bottom:1px solid var(--border);}
-  th{color:var(--ink-muted); font-weight:500; font-size:11px; text-transform:uppercase;}
-  td:first-child, th:first-child{text-align:left;}
-  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:18px;}
+  .intro{font-size:13.5px; color:var(--ink-soft); max-width:840px;}
+  .intro b{color:var(--ink);}
+  .factor-group{border:1px solid var(--border); border-radius:8px; margin-bottom:10px; overflow:hidden;}
+  .factor-group .fg-header{padding:9px 14px; font-size:12.5px; font-weight:600; background:var(--bg); color:var(--ink-soft);}
+  .factor-group .items-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; padding:12px 14px;}
+  .factor-group .items-grid label{font-size:11.5px; color:var(--ink-muted); display:block; margin-bottom:2px;}
+  select, input{font:inherit; padding:6px 7px; border:1px solid var(--border); border-radius:6px; width:100%;}
+  button{font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--border); background:var(--surface); padding:8px 14px; color:var(--ink);}
+  button.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .visit-row{display:flex; gap:10px; align-items:center; margin-bottom:12px;}
+  .visit-row label{font-size:12px; color:var(--ink-soft); white-space:nowrap;}
+  .visit-row input{width:100px;}
+  .pills{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .pill{font-size:11.5px; background:var(--bg); border-radius:999px; padding:4px 10px; display:inline-flex; align-items:center; gap:6px;}
+  .pill i{cursor:pointer;}
+  .chart-select{max-width:420px; margin-bottom:10px;}
+  .chart-wrap{position:relative; height:260px;}
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px;}
   .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px;}
-  .card .label{font-size:11px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.03em;}
-  .card .value{font-size:20px; font-weight:600; margin-top:4px;}
-  .card .note{font-size:12px; color:var(--ink-soft); margin-top:2px;}
-  .charts-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
-  .chart-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;}
-  .chart-box .item-title{font-size:12.5px; font-weight:600; margin-bottom:2px;}
-  .chart-box .item-dir{font-size:11px; margin-bottom:8px;}
-  .item-dir.skill{color:var(--skill);}
-  .item-dir.behavior{color:var(--behavior);}
-  .chart-wrap{position:relative; height:170px;}
-  .predict-row{display:flex; gap:10px; align-items:center; margin-bottom:14px;}
-  .predict-row input{width:90px; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font:inherit;}
-  .legend-mini{display:flex; gap:16px; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px;}
-  .legend-mini span{display:inline-flex; align-items:center; gap:5px;}
-  .swatch{width:14px; height:3px; display:inline-block; border-radius:2px;}
-  .newchild-form{display:flex; gap:8px; margin-top:6px;}
-  .newchild-form input{flex:1; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font:inherit;}
-  footer.storage-note{font-size:11.5px; color:var(--ink-muted); padding:14px 28px 30px; max-width:1180px;}
+  .card .label{font-size:11px; color:var(--ink-muted); text-transform:uppercase;}
+  .card .value{font-size:22px; font-weight:600; margin-top:4px;}
+  #heatmapCanvas{border-radius:6px;}
+  .legend-row{display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--ink-soft); margin-top:10px;}
+  .legend-grad{width:160px; height:10px; border-radius:4px; background:linear-gradient(to right, #2c6e7f, #f5f6f8, #b5651d);}
+  .factor-key{display:flex; flex-wrap:wrap; gap:12px; font-size:11.5px; color:var(--ink-soft); margin-top:10px;}
+  .factor-key span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .note{font-size:12px; color:var(--ink-muted); margin-top:8px;}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <h1>Roots</h1>
-  <span class="tag">developmental progress tracker — ordinal disease-course-mapping prototype</span>
+  <h1>Disease Course Mapping for Autism — CARS2-ST Demonstration</h1>
+  <p>The same multivariate ordinal disease course mapping method used to disentangle Parkinson's disease subtypes from
+  MDS-UPDRS (Poulet &amp; Durrleman, 2023, <i>Statistics in Medicine</i>) applied to CARS2-ST, a clinician-direct-observation
+  autism severity scale. Fit on <b>synthetic data (n=300)</b> for demonstration purposes.</p>
 </header>
 <div class="disclaimer">
-  Prototype built on <strong>synthetic data</strong> for pipeline development only. Population parameters are fit to
-  a simulated cohort, not real patients. Not for clinical decision-making.
+  Prototype built on synthetic data, calibrated to match a published factor structure (Campbell et al., 2026) but not
+  fit to real patients. Not for clinical decision-making. CARS2-ST item content is copyrighted (Schopler et al., 2010,
+  WPS) and is not reproduced — items are shown only by number and their published short domain label.
 </div>
 
-<div class="layout">
-  <aside>
-    <h2>Children</h2>
-    <div id="childList"></div>
-    <div class="newchild-form">
-      <input id="newChildName" placeholder="Child name or ID" />
-      <button class="primary" onclick="addChild()">Add</button>
+<div class="tabs">
+  <button class="tab-btn active" id="tabBtnTraj" onclick="showTab('traj')">Trajectory Explorer</button>
+  <button class="tab-btn" id="tabBtnPop" onclick="showTab('pop')">Population Structure &amp; Subtypes</button>
+</div>
+
+<main>
+
+<div id="viewTraj">
+  <div class="panel">
+    <p class="intro">Enter a child's visit history below (age + CARS2-ST item scores, 1–4 in 0.5 steps, grouped by
+    Campbell et al.'s three published factors). The tool personalizes that child's <b>developmental pace</b> and
+    <b>timing</b> on a shared disease-course timeline — the same mechanism used to personalize a Parkinson's patient's
+    progression rate and onset, applied here to a developmental trajectory instead.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Add a visit</h3>
+    <div class="visit-row">
+      <label>Age (years)</label>
+      <input id="ageInput" type="number" step="0.1" min="3" max="10" value="5.0">
+      <button class="primary" onclick="addVisit()">Add visit</button>
     </div>
-    <button onclick="loadDemoChildren()" style="margin-top:8px;">Load demo children</button>
-  </aside>
+    <div id="factorForms"></div>
+  </div>
 
-  <main id="main">
-    <div class="empty">Select or add a child to get started.</div>
-  </main>
+  <div class="pills" id="visitPills"></div>
+
+  <div class="cards">
+    <div class="card"><div class="label">Developmental pace</div><div class="value" id="paceOut">—</div></div>
+    <div class="card"><div class="label">Timing offset</div><div class="value" id="timingOut">—</div></div>
+    <div class="card"><div class="label">Visits recorded</div><div class="value" id="visitCountOut">0</div></div>
+  </div>
+
+  <div class="panel">
+    <h3>Item trajectory</h3>
+    <select class="chart-select" id="itemSelect" onchange="renderChart()"></select>
+    <div class="chart-wrap"><canvas id="trajChart"></canvas></div>
+    <div class="legend-row">
+      <span><span style="display:inline-block;width:12px;height:0;border-top:2px dashed #b7c0cc;"></span> population average</span>
+      <span><span style="display:inline-block;width:12px;height:2px;background:#2c6e7f;"></span> this child</span>
+      <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#1b2430;"></span> recorded visit</span>
+    </div>
+    <div class="note">Chart y-axis shows the CARS2-ST raw score (1.0–4.0), reconstructed from the model's internal 0–6 level coding.</div>
+  </div>
 </div>
 
-<footer class="storage-note">
-  Data is stored via this preview's built-in storage where available, falling back to your browser's local storage
-  when deployed elsewhere. Neither is appropriate for real patient data — a real deployment needs a proper backend
-  with clinical-grade access controls before it touches identifiable records.
-</footer>
+<div id="viewPop" style="display:none;">
+  <div class="panel">
+    <p class="intro">This is the direct analog of the original paper's Figure 5: correlating each item's individual-level
+    <b>space-shift</b> across the population, then ordering items so correlated ones sit together. In Parkinson's, this
+    revealed tremor-dominant vs. postural-instability/gait subtypes. Here, at n=300, it substantially recovers Campbell
+    et al.'s (2026) published three-factor structure — Social Communication, Restrictive/Repetitive Behavior/Sensory, and
+    Emotional/Behavioral Dysregulation — though imperfectly, since two of those factors (SC and RB) are published as
+    highly correlated (r=.87) in the real instrument, making them inherently hard to fully separate.</p>
+  </div>
+  <div class="panel">
+    <h3>Item space-shift correlation (population-implied, ordered by recovered structure)</h3>
+    <canvas id="heatmapCanvas" width="600" height="600" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;"></canvas>
+    <div class="legend-row" style="justify-content:center;">
+      <span>−1 (opposite)</span><span class="legend-grad"></span><span>+1 (moves together)</span>
+    </div>
+    <div class="factor-key" id="factorKey"></div>
+  </div>
+</div>
+
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-/* ---------------------------------------------------------------------
-   Fitted population model (exported from fit_ordinal_dcm.py on the
-   synthetic cohort). Same ordinal DCM math as ordinal_dcm_simulator.py /
-   fit_ordinal_dcm.py (Poulet & Durrleman 2023, Eq. 3).
---------------------------------------------------------------------- */
-const MODEL = {
-  "t0": 3.0, "sigma_tau": 1.2, "sigma_xi": 0.25, "n_sources": 2, "n_levels": 4,
-  "items": [
-    {"name":"adaptive_vabs","label":"Adaptive behavior (VABS-II)","sign":1,"p":0.02836921252310276,"v":0.2950330972671509,"deltas":[1.324914813041687,0.8550606369972229,1.9599848985671997,1.4766130447387695],"A_row":[9.745189666748047,3.118077278137207]},
-    {"name":"communication_cder","label":"Communication (CDER)","sign":1,"p":0.03450188413262367,"v":0.2793876826763153,"deltas":[0.7705101370811462,1.2333043813705444,1.187921404838562,1.7714529037475586],"A_row":[0.5627666711807251,-3.106910467147827]},
-    {"name":"social_cder","label":"Social (CDER)","sign":1,"p":0.9620477557182312,"v":0.19844739139080048,"deltas":[2.150599241256714,0.9916700124740601,1.478114128112793,1.6535636186599731],"A_row":[0.38468030095100403,4.2852091789245605]},
-    {"name":"hyperactivity_abc","label":"Hyperactivity (ABC)","sign":-1,"p":0.8484851717948914,"v":0.4003298878669739,"deltas":[0.4931148290634155,0.9445160031318665,0.5097376108169556,3.7894303798675537],"A_row":[0.3206917941570282,-3.373086929321289]},
-    {"name":"irritability_abc","label":"Irritability (ABC)","sign":-1,"p":0.9409639239311218,"v":0.14905209839344025,"deltas":[1.2081191539764404,0.8246694207191467,1.0945674180984497,1.708268404006958],"A_row":[2.8391194343566895,-1.811275601387024]},
-    {"name":"insistence_sameness","label":"Insistence on sameness (ADI-R)","sign":1,"p":0.041487932205200195,"v":0.17243914306163788,"deltas":[1.173327922821045,1.2298381328582764,1.3267796039581299,1.9798665046691895],"A_row":[-2.5378589630126953,-1.9085668325424194]},
-    {"name":"rsm_repetitive","label":"Repetitive sensorimotor","sign":1,"p":0.25408145785331726,"v":0.05797477439045906,"deltas":[1.0891779661178589,0.7776548266410828,1.523755431175232,2.251124858856201],"A_row":[1.9571685791015625,4.95119571685791]}
-  ]
-};
-const SERIES_COLOR = {"blue":"#2c6e7f"};
-const AGE_MIN = 3, AGE_MAX = 10;
+const MODEL = {"t0": 3.0, "sigma_tau": 1.2, "sigma_xi": 0.25, "n_sources": 3, "n_levels": 6, "items": [{"name": "CARS-01", "item_num": 1, "factor": "SC", "label": "Relating to People", "p": 0.20309330523014069, "v": 0.13381163775920868, "deltas": [0.36575135588645935, 0.6768225431442261, 0.6487411260604858, 0.6122865676879883, 0.5087253451347351, 0.5146499872207642], "A_row": [4.98448371887207, 3.423680543899536, -0.08373154699802399]}, {"name": "CARS-02", "item_num": 2, "factor": "SC", "label": "Imitation", "p": 0.24418304860591888, "v": 0.17366519570350647, "deltas": [0.5967200994491577, 0.3950355648994446, 0.44561266899108887, 0.76005619764328, 0.7079401612281799, 0.25645580887794495], "A_row": [3.68444561958313, 4.010849952697754, -1.6442604064941406]}, {"name": "CARS-03", "item_num": 3, "factor": "ED", "label": "Emotional Response", "p": 0.3898378014564514, "v": 0.13131974637508392, "deltas": [1.4673566818237305, 0.533901572227478, 0.4376334547996521, 0.4422776401042938, 0.5370921492576599, 0.41176506876945496], "A_row": [1.1010900735855103, -0.8271633386611938, -2.1966774463653564]}, {"name": "CARS-04", "item_num": 4, "factor": "RB", "label": "Body Use", "p": 0.40405571460723877, "v": 0.19931410253047943, "deltas": [1.377875566482544, 0.4148806929588318, 0.42765384912490845, 0.47585687041282654, 0.38986673951148987, 0.4911075234413147], "A_row": [2.263291597366333, 2.2397305965423584, -2.4130399227142334]}, {"name": "CARS-05", "item_num": 5, "factor": "RB", "label": "Object Use", "p": 0.3132452666759491, "v": 0.17467601597309113, "deltas": [0.9901101589202881, 0.5114057064056396, 0.4007211923599243, 0.3657277226448059, 0.5123155117034912, 0.40696993470191956], "A_row": [3.4587252140045166, 2.304080009460449, -2.0716073513031006]}, {"name": "CARS-06", "item_num": 6, "factor": "ED", "label": "Adaptation to Change", "p": 0.9701845049858093, "v": 0.02351047657430172, "deltas": [1.4776332378387451, 0.6475709676742554, 0.49403148889541626, 0.5797760486602783, 0.5433889627456665, 0.3847883343696594], "A_row": [5.521407604217529, -2.83687424659729, 3.2193620204925537]}, {"name": "CARS-07", "item_num": 7, "factor": "SC", "label": "Visual Response", "p": 0.3046134114265442, "v": 0.17418359220027924, "deltas": [1.1426832675933838, 0.5414783954620361, 0.5161474347114563, 0.3943862020969391, 0.5032383799552917, 0.4588147699832916], "A_row": [3.360957622528076, 4.072108745574951, -2.1832399368286133]}, {"name": "CARS-08", "item_num": 8, "factor": "SC", "label": "Listening Response", "p": 0.3537277281284332, "v": 0.17501941323280334, "deltas": [1.1108075380325317, 0.611947774887085, 0.7044652700424194, 0.6577208042144775, 0.5232076048851013, 0.37997299432754517], "A_row": [2.2179036140441895, 3.1370389461517334, -2.0827746391296387]}, {"name": "CARS-09", "item_num": 9, "factor": "RB", "label": "Taste, Smell, & Touch Response and Use", "p": 0.3987443447113037, "v": 0.1392032951116562, "deltas": [1.1610026359558105, 0.5539351105690002, 0.5806987881660461, 0.477892130613327, 0.5338296890258789, 0.5246128439903259], "A_row": [2.857102394104004, -0.44545450806617737, -2.93316650390625]}, {"name": "CARS-10", "item_num": 10, "factor": "ED", "label": "Fear or Nervousness", "p": 0.02984015829861164, "v": 0.02302984893321991, "deltas": [0.5133209824562073, 0.2876070439815521, 0.46589142084121704, 0.3499927222728729, 0.7626361846923828, 0.6030307412147522], "A_row": [2.886571168899536, -4.477952480316162, -5.792062759399414]}, {"name": "CARS-11", "item_num": 11, "factor": "SC", "label": "Verbal Communication", "p": 0.26911330223083496, "v": 0.15950623154640198, "deltas": [1.1087489128112793, 0.49418315291404724, 0.3574346601963043, 0.5119253993034363, 0.3403197228908539, 0.518357515335083], "A_row": [3.1063201427459717, 3.3896901607513428, -2.5255167484283447]}, {"name": "CARS-12", "item_num": 12, "factor": "SC", "label": "Nonverbal Communication", "p": 0.2595899701118469, "v": 0.15073277056217194, "deltas": [0.7340222597122192, 0.7915424704551697, 0.39911988377571106, 0.42955532670021057, 0.253152072429657, 0.4802945852279663], "A_row": [3.0699949264526367, 3.7694528102874756, -1.8295108079910278]}, {"name": "CARS-13", "item_num": 13, "factor": "ED", "label": "Activity Level", "p": 0.21129640936851501, "v": 0.13544383645057678, "deltas": [0.6921250820159912, 0.39746731519699097, 0.499847948551178, 0.43958017230033875, 0.4638211131095886, 0.5053773522377014], "A_row": [1.3940211534500122, -2.1501827239990234, -4.046027183532715]}, {"name": "CARS-14", "item_num": 14, "factor": "SC", "label": "Level and Consistency of Intellectual Response", "p": 0.37939462065696716, "v": 0.18622417747974396, "deltas": [1.33552086353302, 0.27199292182922363, 0.6659892797470093, 0.5710875391960144, 0.3537881374359131, 0.6394912004470825], "A_row": [1.6056638956069946, -1.0057841539382935, 0.38596755266189575]}, {"name": "CARS-15", "item_num": 15, "factor": "SC", "label": "General Impressions", "p": 0.2574605643749237, "v": 0.16052702069282532, "deltas": [0.7303495407104492, 0.4179755747318268, 0.5053982138633728, 0.7289688587188721, 0.5539461970329285, 0.6638038158416748], "A_row": [2.3640823364257812, 3.5311336517333984, -2.8304171562194824]}]}
+;
+const FACTOR_LABELS = {"SC": "Social Communication", "RB": "Restrictive/Repetitive Behavior/Sensory", "ED": "Emotional and Behavioral Dysregulation"};
+const FACTOR_COLORS = {SC:"#2c6e7f", RB:"#1D9E75", ED:"#b5651d"};
+const AGE_MIN=3, AGE_MAX=10;
 
-/* ---------------------------------------------------------------------
-   Ordinal DCM math (mirrors fit_ordinal_dcm.py)
---------------------------------------------------------------------- */
 function clamp(x,a,b){return Math.min(Math.max(x,a),b);}
-function sigmoidCurve(x,p){
-  p = clamp(p,0.03,0.97);
-  const denom = p*(1-p);
-  const z = clamp(-x/denom,-30,30);
-  return 1/(1+(1/p-1)*Math.exp(z));
-}
+function sigmoidCurve(x,p){p=clamp(p,0.03,0.97);const d=p*(1-p);const z=clamp(-x/d,-30,30);return 1/(1+(1/p-1)*Math.exp(z));}
 function levelProbs(age,tau,xi,w,item,t0){
-  const rawTime = Math.exp(xi)*(age - t0 - tau);
-  let cum = 0;
-  const pge = [1];
-  for(const d of item.deltas){
-    cum += d;
-    const x = item.sign*item.v*rawTime - item.v*cum + w;
-    pge.push(sigmoidCurve(x,item.p));
-  }
+  const rawTime=Math.exp(xi)*(age-t0-tau);
+  let cum=0; const pge=[1];
+  for(const d of item.deltas){cum+=d; const x=item.v*rawTime-item.v*cum+w; pge.push(sigmoidCurve(x,item.p));}
   pge.push(0);
-  for(let i=1;i<pge.length;i++) pge[i] = Math.min(pge[i],pge[i-1]);
-  const probs = [];
-  for(let i=0;i<pge.length-1;i++) probs.push(Math.max(pge[i]-pge[i+1],1e-7));
-  const s = probs.reduce((a,b)=>a+b,0);
-  return probs.map(p=>p/s);
+  for(let i=1;i<pge.length;i++) pge[i]=Math.min(pge[i],pge[i-1]);
+  const probs=[]; for(let i=0;i<pge.length-1;i++) probs.push(Math.max(pge[i]-pge[i+1],1e-7));
+  const s=probs.reduce((a,b)=>a+b,0); return probs.map(p=>p/s);
 }
-function expectedScore(probs){ return probs.reduce((acc,p,i)=>acc+p*i,0); }
-function wOf(sources, A_row){ return sources[0]*A_row[0] + sources[1]*A_row[1]; }
-
-function nll(params, visits, model){
-  const [tau,xi,s1,s2] = params;
-  let loss = 0;
+function expectedLevel(probs){return probs.reduce((a,p,i)=>a+p*i,0);}
+function levelToScore(l){return 1 + l*0.5;} // internal 0-6 level -> raw CARS2-ST score 1.0-4.0
+function wOf(s,A){let sum=0; for(let k=0;k<s.length;k++) sum+=s[k]*A[k]; return sum;}
+function nll(params,visits,model){
+  const tau=params[0], xi=params[1], sources=params.slice(2);
+  let loss=0;
   for(const v of visits){
     for(const item of model.items){
-      const val = v.scores[item.name];
-      if(val === undefined || val === null || val === '') continue;
-      const w = wOf([s1,s2], item.A_row);
-      const probs = levelProbs(v.age, tau, xi, w, item, model.t0);
-      loss += -Math.log(probs[val]);
+      const val=v.scores[item.name];
+      if(val===undefined||val===null||val==='') continue;
+      const w=wOf(sources,item.A_row);
+      const probs=levelProbs(v.age,tau,xi,w,item,model.t0);
+      loss+=-Math.log(probs[val]);
     }
   }
-  loss += 0.5*tau*tau/(model.sigma_tau**2);
-  loss += 0.5*xi*xi/(model.sigma_xi**2);
-  loss += 0.5*(s1*s1+s2*s2);
+  loss+=0.5*tau*tau/(model.sigma_tau**2);
+  loss+=0.5*xi*xi/(model.sigma_xi**2);
+  for(const s of sources) loss+=0.5*s*s;
   return loss;
 }
-
-// Joint MAP personalization: 4 free params (tau, xi, s1, s2), Adam w/ numeric gradients.
-function personalize(visits, model){
-  if(!visits.length) return {tau:0, xi:0, s1:0, s2:0};
-  let params=[0,0,0,0], m=[0,0,0,0], v=[0,0,0,0];
-  const lr=0.05, b1=0.9, b2=0.999, eps=1e-8, h=1e-3;
-  for(let t=1;t<=250;t++){
-    const base = nll(params, visits, model);
-    const grad = [0,0,0,0];
-    for(let i=0;i<4;i++){
-      const p2 = params.slice(); p2[i]+=h;
-      grad[i] = (nll(p2, visits, model) - base)/h;
-    }
-    for(let i=0;i<4;i++){
-      m[i] = b1*m[i] + (1-b1)*grad[i];
-      v[i] = b2*v[i] + (1-b2)*grad[i]*grad[i];
-      const mhat = m[i]/(1-Math.pow(b1,t));
-      const vhat = v[i]/(1-Math.pow(b2,t));
-      params[i] -= lr*mhat/(Math.sqrt(vhat)+eps);
+function personalize(visits,model){
+  const nParams = 2 + model.n_sources;
+  if(!visits.length) return {tau:0,xi:0,sources:new Array(model.n_sources).fill(0)};
+  let params=new Array(nParams).fill(0), m=new Array(nParams).fill(0), v=new Array(nParams).fill(0);
+  const lr=0.05,b1=0.9,b2=0.999,eps=1e-8,h=1e-3;
+  for(let t=1;t<=200;t++){
+    const base=nll(params,visits,model);
+    const grad=new Array(nParams).fill(0);
+    for(let i=0;i<nParams;i++){const p2=params.slice(); p2[i]+=h; grad[i]=(nll(p2,visits,model)-base)/h;}
+    for(let i=0;i<nParams;i++){
+      m[i]=b1*m[i]+(1-b1)*grad[i];
+      v[i]=b2*v[i]+(1-b2)*grad[i]*grad[i];
+      const mhat=m[i]/(1-Math.pow(b1,t)), vhat=v[i]/(1-Math.pow(b2,t));
+      params[i]-=lr*mhat/(Math.sqrt(vhat)+eps);
     }
   }
-  return {tau:params[0], xi:params[1], s1:params[2], s2:params[3]};
+  return {tau:params[0], xi:params[1], sources:params.slice(2)};
 }
 
-/* ---------------------------------------------------------------------
-   Storage: prefer this preview's window.storage; fall back to
-   localStorage for standalone deployments; fall back to in-memory.
---------------------------------------------------------------------- */
-let memoryStore = {};
-async function storeGet(key){
-  try{
-    if(window.storage){ const r = await window.storage.get(key,false); return r ? JSON.parse(r.value) : null; }
-  }catch(e){ /* key not found or unavailable */ }
-  try{
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  }catch(e){ return memoryStore[key] ?? null; }
-}
-async function storeSet(key, value){
-  memoryStore[key] = value;
-  try{
-    if(window.storage){ await window.storage.set(key, JSON.stringify(value), false); return; }
-  }catch(e){ /* fall through */ }
-  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* in-memory only */ }
-}
+let visits = [];
+let selectedItem = MODEL.items[0].name;
 
-/* ---------------------------------------------------------------------
-   App state
---------------------------------------------------------------------- */
-let children = {};   // id -> {name, visits:[{age, scores:{item:val}}]}
-let activeId = null;
-let charts = {};      // item name -> Chart.js instance
+// score dropdown options: display 1.0-4.0 in 0.5 steps, store level 0-6
+const SCORE_OPTIONS = [0,1,2,3,4,5,6].map(l=>({level:l, score:levelToScore(l)}));
 
-async function loadState(){
-  const saved = await storeGet('roots_children');
-  children = saved || {};
-  renderChildList();
-  const ids = Object.keys(children);
-  if(ids.length) selectChild(ids[0]);
-}
-async function saveState(){
-  await storeSet('roots_children', children);
-}
+const factors = [...new Set(MODEL.items.map(i=>i.factor))];
+const formsEl = document.getElementById('factorForms');
+factors.forEach(fac=>{
+  const div = document.createElement('div');
+  div.className = 'factor-group';
+  const itemsInFac = MODEL.items.filter(i=>i.factor===fac);
+  div.innerHTML = `<div class="fg-header">${FACTOR_LABELS[fac]} <span style="font-weight:400;">(${itemsInFac.length} items)</span></div>
+    <div class="items-grid">${itemsInFac.map(item=>`
+      <div>
+        <label>Item ${item.item_num} — ${item.label}</label>
+        <select id="sc_${item.name}">
+          <option value="">—</option>
+          ${SCORE_OPTIONS.map(o=>`<option value="${o.level}">${o.score.toFixed(1)}</option>`).join('')}
+        </select>
+      </div>`).join('')}</div>`;
+  formsEl.appendChild(div);
+});
 
-function uid(){ return 'C' + Math.random().toString(36).slice(2,8); }
-
-async function addChild(){
-  const nameEl = document.getElementById('newChildName');
-  const name = nameEl.value.trim();
-  if(!name) return;
-  const id = uid();
-  children[id] = {name, visits:[]};
-  nameEl.value = '';
-  await saveState();
-  renderChildList();
-  selectChild(id);
-}
-
-async function loadDemoChildren(){
-  const demo = {
-    [uid()]: {name:"Demo A (cluster 1)", visits:[
-      {age:3.90, scores:{adaptive_vabs:2, communication_cder:0, social_cder:2, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:0, rsm_repetitive:4}},
-      {age:5.60, scores:{adaptive_vabs:2, communication_cder:0, social_cder:3, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:0, rsm_repetitive:4}},
-      {age:6.15, scores:{adaptive_vabs:2, communication_cder:0, social_cder:3, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:0, rsm_repetitive:4}},
-      {age:8.33, scores:{adaptive_vabs:3, communication_cder:1, social_cder:4, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:1, rsm_repetitive:4}},
-    ]},
-    [uid()]: {name:"Demo B (cluster 2)", visits:[
-      {age:3.66, scores:{adaptive_vabs:0, communication_cder:3, social_cder:0, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:3, rsm_repetitive:0}},
-      {age:4.77, scores:{adaptive_vabs:0, communication_cder:3, social_cder:0, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:4, rsm_repetitive:0}},
-      {age:7.13, scores:{adaptive_vabs:2, communication_cder:4, social_cder:2, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:4, rsm_repetitive:0}},
-      {age:8.48, scores:{adaptive_vabs:2, communication_cder:4, social_cder:3, hyperactivity_abc:0, irritability_abc:0, insistence_sameness:4, rsm_repetitive:0}},
-    ]},
-  };
-  Object.assign(children, demo);
-  await saveState();
-  renderChildList();
-  selectChild(Object.keys(demo)[0]);
-}
-
-function renderChildList(){
-  const list = document.getElementById('childList');
-  list.innerHTML = '';
-  Object.entries(children).forEach(([id, c])=>{
-    const div = document.createElement('div');
-    div.className = 'child-item' + (id===activeId ? ' active' : '');
-    div.onclick = ()=>selectChild(id);
-    div.innerHTML = `<span>${c.name}</span><span class="n">${c.visits.length}v</span>`;
-    list.appendChild(div);
+const itemSelectEl = document.getElementById('itemSelect');
+factors.forEach(fac=>{
+  const grp = document.createElement('optgroup');
+  grp.label = FACTOR_LABELS[fac];
+  MODEL.items.filter(i=>i.factor===fac).forEach(item=>{
+    const opt = document.createElement('option');
+    opt.value = item.name; opt.textContent = `Item ${item.item_num} — ${item.label}`;
+    grp.appendChild(opt);
   });
-}
+  itemSelectEl.appendChild(grp);
+});
+itemSelectEl.value = selectedItem;
 
-function selectChild(id){
-  activeId = id;
-  renderChildList();
-  renderMain();
+let chart = null;
+function renderPills(){
+  const el = document.getElementById('visitPills');
+  el.innerHTML = '';
+  visits.forEach((v,idx)=>{
+    const pill = document.createElement('span');
+    pill.className = 'pill';
+    pill.innerHTML = `age ${v.age.toFixed(1)} <i onclick="removeVisit(${idx})">✕</i>`;
+    el.appendChild(pill);
+  });
+  document.getElementById('visitCountOut').textContent = visits.length;
 }
+function removeVisit(idx){ visits.splice(idx,1); renderPills(); renderChart(); }
 
-async function deleteChild(id){
-  delete children[id];
-  await saveState();
-  activeId = Object.keys(children)[0] || null;
-  renderChildList();
-  renderMain();
-}
-
-async function addVisit(){
-  const c = children[activeId];
-  const age = parseFloat(document.getElementById('visitAge').value);
-  if(isNaN(age) || age < 0){ alert('Enter a valid age in years.'); return; }
+function addVisit(){
+  const age = parseFloat(document.getElementById('ageInput').value);
+  if(isNaN(age)) return;
   const scores = {};
   MODEL.items.forEach(item=>{
-    const el = document.getElementById('score_'+item.name);
-    const val = el.value;
-    if(val !== '') scores[item.name] = parseInt(val,10);
+    const el = document.getElementById('sc_'+item.name);
+    if(el.value !== '') scores[item.name] = parseInt(el.value,10);
   });
-  c.visits.push({age, scores});
-  c.visits.sort((a,b)=>a.age-b.age);
-  await saveState();
-  renderMain();
+  visits.push({age, scores});
+  visits.sort((a,b)=>a.age-b.age);
+  renderPills();
+  renderChart();
 }
 
-async function deleteVisit(idx){
-  children[activeId].visits.splice(idx,1);
-  await saveState();
-  renderMain();
+function renderChart(){
+  selectedItem = itemSelectEl.value;
+  const fit = personalize(visits, MODEL);
+  document.getElementById('paceOut').textContent = Math.exp(fit.xi).toFixed(2) + 'x';
+  document.getElementById('timingOut').textContent = (fit.tau>=0?'+':'') + fit.tau.toFixed(1) + 'y';
+
+  const item = MODEL.items.find(i=>i.name===selectedItem);
+  const ages = []; for(let a=AGE_MIN; a<=AGE_MAX; a+=0.2) ages.push(Math.round(a*10)/10);
+  const w = wOf(fit.sources, item.A_row);
+  const popCurve = ages.map(a=>levelToScore(expectedLevel(levelProbs(a,0,0,0,item,MODEL.t0))));
+  const persCurve = ages.map(a=>levelToScore(expectedLevel(levelProbs(a,fit.tau,fit.xi,w,item,MODEL.t0))));
+  const points = visits.filter(v=>v.scores[item.name]!==undefined).map(v=>({x:v.age,y:levelToScore(v.scores[item.name])}));
+
+  if(chart) chart.destroy();
+  chart = new Chart(document.getElementById('trajChart'), {
+    data:{labels:ages, datasets:[
+      {type:'line', data:persCurve, borderColor:'#2c6e7f', borderWidth:2.5, pointRadius:0, tension:0.15, order:2},
+      {type:'line', data:popCurve, borderColor:'#b7c0cc', borderWidth:2, borderDash:[5,4], pointRadius:0, tension:0.15, order:1},
+      {type:'scatter', data:points, backgroundColor:'#1b2430', pointRadius:4, order:0},
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{type:'linear', min:AGE_MIN, max:AGE_MAX, title:{display:true,text:'age (yrs)'}},
+               y:{min:0.7, max:4.3, ticks:{stepSize:0.5}, title:{display:true,text:'CARS2-ST score (1-4)'}}}}
+  });
 }
 
-/* ---------------------------------------------------------------------
-   Rendering
---------------------------------------------------------------------- */
-function renderMain(){
-  const main = document.getElementById('main');
-  if(!activeId || !children[activeId]){
-    main.innerHTML = '<div class="empty">Select or add a child to get started.</div>';
-    return;
+function cosine(a,b){
+  let dot=0,na=0,nb=0;
+  for(let i=0;i<a.length;i++){dot+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i];}
+  return dot/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);
+}
+function renderHeatmap(){
+  const items = MODEL.items;
+  const n = items.length;
+  const corr = [];
+  for(let i=0;i<n;i++){
+    corr.push([]);
+    for(let j=0;j<n;j++) corr[i].push(cosine(items[i].A_row, items[j].A_row));
   }
-  const c = children[activeId];
-  const fit = personalize(c.visits, MODEL);
-  const paceFactor = Math.exp(fit.xi);
-  const paceLabel = paceFactor > 1
-    ? `${((paceFactor-1)*100).toFixed(0)}% faster than typical pace`
-    : `${((1-paceFactor)*100).toFixed(0)}% slower than typical pace`;
-  const timingLabel = fit.tau > 0
-    ? `${fit.tau.toFixed(1)}y later than typical timing`
-    : `${Math.abs(fit.tau).toFixed(1)}y earlier than typical timing`;
-
-  main.innerHTML = `
-    <div class="child-header">
-      <div>
-        <h2>${c.name}</h2>
-        <div class="sub">${c.visits.length} visit${c.visits.length===1?'':'s'} recorded</div>
-      </div>
-      <button onclick="deleteChild('${activeId}')" style="color:var(--danger);border-color:var(--danger);">Remove child</button>
-    </div>
-
-    <div class="cards">
-      <div class="card">
-        <div class="label">Developmental pace</div>
-        <div class="value">${paceFactor.toFixed(2)}x</div>
-        <div class="note">${c.visits.length ? paceLabel : 'no visits yet'}</div>
-      </div>
-      <div class="card">
-        <div class="label">Timing offset</div>
-        <div class="value">${fit.tau>=0?'+':''}${fit.tau.toFixed(1)}y</div>
-        <div class="note">${c.visits.length ? timingLabel : 'no visits yet'}</div>
-      </div>
-      <div class="card">
-        <div class="label">Profile coordinates</div>
-        <div class="value">${fit.s1.toFixed(1)}, ${fit.s2.toFixed(1)}</div>
-        <div class="note">source 1, source 2 — raw, needs clinical interpretation</div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Add a visit</h3>
-      <div class="visit-form">
-        <div><label>Age (yrs)</label><input id="visitAge" type="number" step="0.1" min="0" max="18" placeholder="5.2"></div>
-        ${MODEL.items.map(item=>`
-          <div>
-            <label>${item.label.split('(')[0].trim()}</label>
-            <select id="score_${item.name}">
-              <option value="">—</option>
-              ${[0,1,2,3,4].map(v=>`<option value="${v}">${v}</option>`).join('')}
-            </select>
-          </div>`).join('')}
-        <div><button class="primary" onclick="addVisit()">Add visit</button></div>
-      </div>
-    </div>
-
-    ${c.visits.length ? `
-    <div class="panel">
-      <h3>Visit history</h3>
-      <table>
-        <thead><tr><th>Age</th>${MODEL.items.map(i=>`<th>${i.label.split('(')[0].trim()}</th>`).join('')}<th></th></tr></thead>
-        <tbody>
-          ${c.visits.map((v,idx)=>`
-            <tr>
-              <td>${v.age.toFixed(1)}</td>
-              ${MODEL.items.map(i=>`<td>${v.scores[i.name] ?? '—'}</td>`).join('')}
-              <td><button class="ghost" onclick="deleteVisit(${idx})">Remove</button></td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>` : ''}
-
-    <div class="panel">
-      <h3>Predict at a future age</h3>
-      <div class="predict-row">
-        <label>Age</label>
-        <input id="predictAge" type="number" step="0.1" min="3" max="10" value="${Math.min(10, (c.visits.length ? c.visits[c.visits.length-1].age : 5) + 1).toFixed(1)}" oninput="renderPrediction()">
-        <span style="color:var(--ink-muted); font-size:12px;">years</span>
-      </div>
-      <table id="predictionTable"></table>
-    </div>
-
-    <div class="legend-mini">
-      <span><span class="swatch" style="background:#b7c0cc;"></span>population average</span>
-      <span><span class="swatch" style="background:var(--accent);"></span>this child (personalized)</span>
-      <span><span class="swatch" style="background:var(--ink); border-radius:50%; width:7px; height:7px;"></span>recorded visit</span>
-    </div>
-    ${!c.visits.length ? '<div style="font-size:12px; color:var(--ink-muted); margin:-6px 0 10px;">No visits yet — this child\'s curve defaults exactly to the population average, so the two lines coincide (you\'ll still see the dashed pattern on top).</div>' : ''}
-    <div class="charts-grid" id="chartsGrid"></div>
-  `;
-
-  renderCharts(c, fit);
-  renderPrediction(c, fit);
+  const canvas = document.getElementById('heatmapCanvas');
+  const ctx = canvas.getContext('2d');
+  const cell = canvas.width / n;
+  function colorFor(v){
+    v = clamp(v,-1,1);
+    if(v>=0){
+      const t=v;
+      const r=Math.round(245+(181-245)*t), g=Math.round(246+(101-246)*t), b=Math.round(248+(29-248)*t);
+      return `rgb(${r},${g},${b})`;
+    } else {
+      const t=-v;
+      const r=Math.round(245+(44-245)*t), g=Math.round(246+(110-246)*t), b=Math.round(248+(127-248)*t);
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){
+      ctx.fillStyle = colorFor(corr[i][j]);
+      ctx.fillRect(j*cell, i*cell, cell+0.5, cell+0.5);
+    }
+  }
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 1.5;
+  let prevFac = items[0].factor;
+  for(let i=0;i<n;i++){
+    if(items[i].factor !== prevFac){
+      ctx.beginPath(); ctx.moveTo(0, i*cell); ctx.lineTo(canvas.width, i*cell); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(i*cell, 0); ctx.lineTo(i*cell, canvas.height); ctx.stroke();
+      prevFac = items[i].factor;
+    }
+  }
+  const keyEl = document.getElementById('factorKey');
+  keyEl.innerHTML = Object.keys(FACTOR_LABELS).map(f=>
+    `<span><span class="dot" style="background:${FACTOR_COLORS[f]};"></span>${FACTOR_LABELS[f]}</span>`).join('');
 }
 
-function renderPrediction(cArg, fitArg){
-  const c = cArg || children[activeId];
-  const fit = fitArg || personalize(c.visits, MODEL);
-  const ageEl = document.getElementById('predictAge');
-  if(!ageEl) return;
-  const age = parseFloat(ageEl.value);
-  const table = document.getElementById('predictionTable');
-  if(isNaN(age)){ table.innerHTML = ''; return; }
-  const w = (item)=>wOf([fit.s1, fit.s2], item.A_row);
-  let rows = MODEL.items.map(item=>{
-    const probs = levelProbs(age, fit.tau, fit.xi, w(item), item, MODEL.t0);
-    const exp = expectedScore(probs);
-    return `<tr><td style="text-align:left">${item.label}</td><td>${exp.toFixed(2)}</td></tr>`;
-  }).join('');
-  table.innerHTML = `<thead><tr><th style="text-align:left">Item</th><th>Predicted score</th></tr></thead><tbody>${rows}</tbody>`;
+function showTab(tab){
+  document.getElementById('viewTraj').style.display = tab==='traj' ? 'block' : 'none';
+  document.getElementById('viewPop').style.display = tab==='pop' ? 'block' : 'none';
+  document.getElementById('tabBtnTraj').classList.toggle('active', tab==='traj');
+  document.getElementById('tabBtnPop').classList.toggle('active', tab==='pop');
+  if(tab==='pop') renderHeatmap();
 }
 
-function renderCharts(c, fit){
-  const grid = document.getElementById('chartsGrid');
-  grid.innerHTML = '';
-  Object.values(charts).forEach(ch=>ch.destroy());
-  charts = {};
-
-  const ages = [];
-  for(let a=AGE_MIN; a<=AGE_MAX; a+=0.2) ages.push(Math.round(a*10)/10);
-
-  MODEL.items.forEach(item=>{
-    const box = document.createElement('div');
-    box.className = 'chart-box';
-    const dirClass = item.sign>0 ? 'skill' : 'behavior';
-    const dirText = item.sign>0 ? '↑ higher = more of this skill' : '↓ lower = fewer problem behaviors';
-    box.innerHTML = `
-      <div class="item-title">${item.label}</div>
-      <div class="item-dir ${dirClass}">${dirText}</div>
-      <div class="chart-wrap"><canvas id="chart_${item.name}"></canvas></div>
-    `;
-    grid.appendChild(box);
-
-    const w = wOf([fit.s1, fit.s2], item.A_row);
-    const popCurve = ages.map(a=>expectedScore(levelProbs(a, 0, 0, 0, item, MODEL.t0)));
-    const persCurve = ages.map(a=>expectedScore(levelProbs(a, fit.tau, fit.xi, w, item, MODEL.t0)));
-    const points = c.visits.filter(v=>v.scores[item.name]!==undefined)
-      .map(v=>({x:v.age, y:v.scores[item.name]}));
-
-    const ctx = document.getElementById('chart_'+item.name);
-    charts[item.name] = new Chart(ctx, {
-      data:{
-        labels: ages,
-        datasets:[
-          // personalized drawn first (behind); population drawn last (on top, dashed) so
-          // when the two coincide (e.g. a child with no visits yet defaults exactly to the
-          // population average) the dashed line is still visible on top, with the solid
-          // line peeking through its gaps, instead of one line hiding the other.
-          {type:'line', label:'personalized', data:persCurve, borderColor:'#2c6e7f', borderWidth:2.5, pointRadius:0, tension:0.15, order:2},
-          {type:'line', label:'population', data:popCurve, borderColor:'#b7c0cc', borderWidth:2, borderDash:[5,4], pointRadius:0, tension:0.15, order:1},
-          {type:'scatter', label:'visits', data:points, backgroundColor:'#1b2430', pointRadius:4, order:0},
-        ]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{type:'linear', min:AGE_MIN, max:AGE_MAX, title:{display:true, text:'age (yrs)', font:{size:10}}, ticks:{font:{size:10}}},
-          y:{min:-0.3, max:4.3, ticks:{stepSize:1, font:{size:10}}, title:{display:true, text:'level (0-4)', font:{size:10}}}
-        }
-      }
-    });
-  });
-}
-
-loadState();
+renderPills();
+renderChart();
 </script>
 </body>
 </html>
