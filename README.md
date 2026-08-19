@@ -1,4 +1,5 @@
 # CARS2-ST Ordinal Disease Course Mapping — Final Build (n=300)
+Kindly go through PPT file to understand the model.
 
 Complete rebuild around CARS2-ST at n=300, the sample size that unlocks
 reliable item-level factor recovery (see the sample-size sweep from the
